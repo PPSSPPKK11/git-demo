@@ -1,0 +1,21 @@
+name: Validate Portfolio
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  repository-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate architecture
+        shell: bash
+        run: |
+          test -d src/Plugins
+          test -d src/JavaScript
+          test -d src/FetchXML
+          test -d tests
+          test -d docs
