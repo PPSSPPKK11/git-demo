@@ -1,9 +1,10 @@
 # Dynamics 365 JavaScript Cookbook
 
-This repository intentionally contains small, reusable patterns instead of pretending every requirement is one giant script.
+A practical reference for model-driven app development.
 
-## 1. Fetch a record
+## Web API CRUD
 
+### Retrieve one
 ```javascript
 const row = await Xrm.WebApi.retrieveRecord(
     "account",
@@ -12,8 +13,7 @@ const row = await Xrm.WebApi.retrieveRecord(
 );
 ```
 
-## 2. Fetch multiple records
-
+### Retrieve many
 ```javascript
 const result = await Xrm.WebApi.retrieveMultipleRecords(
     "contact",
@@ -21,110 +21,173 @@ const result = await Xrm.WebApi.retrieveMultipleRecords(
 );
 ```
 
-## 3. Create
-
+### Create
 ```javascript
 const result = await Xrm.WebApi.createRecord("task", {
     subject: "Follow up"
 });
 ```
 
-## 4. Update
-
+### Update
 ```javascript
 await Xrm.WebApi.updateRecord("account", id, {
     description: "Updated by command"
 });
 ```
 
-## 5. Delete
-
+### Delete
 ```javascript
 await Xrm.WebApi.deleteRecord("new_demo", id);
 ```
 
-## 6. Lock / unlock a control
+## Form and controls
 
-```javascript
-formContext.getControl("name").setDisabled(true);
-formContext.getControl("name").setDisabled(false);
-```
-
-## 7. Hide / show a control
-
+### Hide / show
 ```javascript
 formContext.getControl("name").setVisible(false);
 formContext.getControl("name").setVisible(true);
 ```
 
-## 8. Lock all controls for an attribute
+### Lock / unlock
+```javascript
+formContext.getControl("name").setDisabled(true);
+formContext.getControl("name").setDisabled(false);
+```
 
-```formContext.getAttribute("name").controls.forEach(function(control) {
+### Lock every control for a column
+```javascript
+formContext.getAttribute("name").controls.forEach(function(control) {
     control.setDisabled(true);
 });
 ```
 
-## 9. Required / optional
-
-```formContext.getAttribute("name").setRequiredLevel("required");
+### Required / optional
+```javascript
+formContext.getAttribute("name").setRequiredLevel("required");
 formContext.getAttribute("name").setRequiredLevel("none");
 ```
 
-## 10. Set / clear values
-
-```formContext.getAttribute("name").setValue("Contoso");
+### Set / clear
+```javascript
+formContext.getAttribute("name").setValue("Contoso");
 formContext.getAttribute("name").setValue(null);
 ```
 
-## 11. Lookup value
-
-```const lookup = formContext.getAttribute("parentcustomerid").getValue();
-const id = lookup?.[0]?.id;
-const entity = lookup?.[0]?.entityType;
-```
-
-## 12. Filter lookup
-
-Use `addPreSearch` + `addCustomFilter` and remove the handler when the form lifecycle requires cleanup.
-
-## 13. Open form
-
-Use `Xrm.Navigation.openForm` for existing or new records.
-
-## 14. Confirmation
-
-Use `Xrm.Navigation.openConfirmDialog` before destructive operations.
-
-## 15. Notifications
-
-```control.setNotification("Invalid value", "validation");
+### Notifications
+```javascript
+control.setNotification("Invalid value", "validation");
 control.clearNotification("validation");
-formContext.ui.setFormNotification("Fix the errors.", "ERROR", "form");
+
+formContext.ui.setFormNotification(
+    "Fix the errors.",
+    "ERROR",
+    "form_validation"
+);
 ```
 
-## 16. Refresh subgrid
+## Lookup development
 
-```formContext.getControl("Contacts").refresh();
+### Read lookup
+```javascript
+const lookup = formContext
+    .getAttribute("parentcustomerid")
+    .getValue();
+
+const id = lookup && lookup.length
+    ? lookup[0].id
+    : null;
 ```
 
-## 17. Refresh command bar
+### Dynamic filtering
+Use addPreSearch and addCustomFilter to constrain lookup results based on the current form context.
 
-```formContext.ui.refreshRibbon(false);
+### Custom view
+Use addCustomView when the user needs a purpose-built result set and layout.
+
+## Form events
+
+### OnLoad
+Initialize handlers and initial UI state.
+
+### OnChange
+React to a column change.
+
+### OnSave
+Validate and use eventArgs.preventDefault() only when the save genuinely must be blocked.
+
+## Navigation
+
+Use Xrm.Navigation.openForm for record forms and Xrm.Navigation.openConfirmDialog for destructive operations.
+
+## Grids and subgrids
+
+Use gridContext for selected rows. Refresh a subgrid only after underlying data has changed.
+
+## BPF
+
+Use formContext.data.process to inspect the active process, stage and process status. Keep BPF-specific UI logic separate from business rules.
+
+## Command bar
+
+A command normally has:
+- JavaScript action
+- Enable rule
+- Display rule
+- PrimaryControl parameter
+- Optional selected-row parameter
+- Refresh strategy
+
+### Show a button only on existing forms
+
+Classic command definition can use FormStateRule with State=Existing and FormTypeRule with Type=Main.
+
+### Enable a button from JavaScript
+
+```javascript
+function canLock(primaryControl) {
+    const formContext = primaryControl;
+    const locked = formContext.getAttribute("new_locked");
+    return !!locked && locked.getValue() !== true;
+}
 ```
 
-Use it after changing data that a command rule depends on, not continuously from OnLoad.
+### Hide/show a control after a command
 
-## 18. Global context
-
-Use `Xrm.Utility.getGlobalContext()` for organization/user/client information.
-
-## 19. Form type
-
-1 = Create, 2 = Update, 3 = Read Only, 4 = Disabled, 6 = Bulk Edit.
-
-## 20. Save prevention
-
-```executionContext.getEventArgs().preventDefault();
+```javascript
+CRM.Field.hide(formContext, "name");
+CRM.Field.show(formContext, "name");
 ```
 
-Use only when the validation genuinely requires blocking the save.
+### Refresh command state
+
+```javascript
+formContext.ui.refreshRibbon(false);
+```
+
+Do this after changing data used by a command rule, not continuously from OnLoad or from inside the rule.
+
+## Global context
+
+```javascript
+const globalContext = Xrm.Utility.getGlobalContext();
+const userId = globalContext.userSettings.userId;
+const client = globalContext.client.getClient();
+```
+
+## Error handling
+
+```javascript
+try {
+    await Xrm.WebApi.updateRecord("account", id, data);
+} catch (error) {
+    console.error(error);
+    await Xrm.Navigation.openAlertDialog({
+        title: "Update failed",
+        text: "The record could not be updated."
+    });
+}
+```
+
+## Important boundary
+
+Client-side JavaScript is for user experience and client behavior. Critical data integrity rules must also be enforced server-side because Dataverse can be changed through APIs, imports, integrations and other clients.
