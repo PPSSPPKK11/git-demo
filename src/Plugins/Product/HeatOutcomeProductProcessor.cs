@@ -1,7 +1,7 @@
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace EnterpriseCrm.Plugins.Product
+namespace Dynamics365CeEngineering.Plugins.Product
 {
     public sealed class HeatOutcomeProductProcessor : IPlugin
     {
@@ -14,23 +14,36 @@ namespace EnterpriseCrm.Plugins.Product
             var tracing = (ITracingService)serviceProvider.GetService(
                 typeof(ITracingService));
 
-            if (!context.InputParameters.Contains("Target")) return;
+            var target = context.InputParameters.Contains("Target")
+                ? context.InputParameters["Target"] as Entity
+                : null;
 
-            var target = context.InputParameters["Target"] as Entity;
             if (target == null || target.LogicalName != "new_heatsource")
+            {
                 return;
+            }
 
             var outcome = target.GetAttributeValue<OptionSetValue>("new_heatoutcome");
-            if (outcome == null) return;
+            if (outcome == null)
+            {
+                return;
+            }
 
             var service = factory.CreateOrganizationService(context.UserId);
-
             var query = new QueryExpression("product")
             {
                 ColumnSet = new ColumnSet(
-                    "productid", "name", "productnumber",
-                    "new_heatoutcome", "new_companycode"),
-                PageInfo = new PagingInfo { Count = 5000, PageNumber = 1 }
+                    "productid",
+                    "name",
+                    "productnumber",
+                    "new_heatoutcome",
+                    "new_companycode",
+                    "new_productsize"),
+                PageInfo = new PagingInfo
+                {
+                    Count = 5000,
+                    PageNumber = 1
+                }
             };
 
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
@@ -47,13 +60,16 @@ namespace EnterpriseCrm.Plugins.Product
 
                 foreach (var product in page.Entities)
                 {
-                    // Business-specific mapping belongs here.
-                    // Keep this operation idempotent for retry safety.
+                    // Keep the actual write operation idempotent.
+                    // Do not introduce ExecuteMultiple/parallel work here.
                     tracing.Trace("Processing product {0}", product.Id);
                     processed++;
                 }
 
-                if (!page.MoreRecords) break;
+                if (!page.MoreRecords)
+                {
+                    break;
+                }
 
                 query.PageInfo.PageNumber++;
                 query.PageInfo.PagingCookie = page.PagingCookie;
