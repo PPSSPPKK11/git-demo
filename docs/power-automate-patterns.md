@@ -1,42 +1,18 @@
 # Power Automate Enterprise Patterns
 
-## Error handling
+## TRY / CATCH / FINALLY
 
-Use three scopes:
+TRY contains business logic. CATCH runs after failed/timed-out/skipped TRY actions and captures flow name, run ID, failed action and error. FINALLY handles cleanup or telemetry where needed.
 
-1. TRY — primary business logic.
-2. CATCH — configure Run After for failed/timed-out/skipped TRY.
-3. FINALLY — cleanup/telemetry where required.
+## Child Flow
 
-## Child flow pattern
+Use a reusable logging child flow so business flows remain focused on business logic.
 
-A reusable child flow can receive:
+## Previous Business Day
 
-- Flow name
-- Environment
-- Run ID
-- Failed action
-- Error message
-- Record URL
+For a Monday-Friday report:
+- Monday queries Friday.
+- Tuesday-Friday queries the previous calendar day.
+- Saturday/Sunday are skipped.
 
-and persist a normalized failure record.
-
-## Working-day scheduling
-
-For a Monday-Friday reporting flow:
-
-- Monday -> query Friday
-- Tuesday-Friday -> query previous day
-- Saturday/Sunday -> do not execute
-
-Prefer a schedule configured for weekdays instead of relying only on an expression.
-
-## Deployment
-
-Use:
-
-- Environment variables for URLs/list names/table names.
-- Connection references.
-- Solution-aware flows.
-- Separate DEV / TEST / PROD configurations.
-- No hard-coded tenant/customer identifiers.
+Use solution-aware flows, connection references and environment variables for ALM.
