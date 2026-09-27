@@ -1,0 +1,13 @@
+<fetch mapping="logical" aggregate="true">
+  <entity name="opportunity">
+    <attribute name="estimatedvalue" alias="pipelinevalue" aggregate="sum" />
+    <attribute name="opportunityid" alias="opportunitycount" aggregate="count" />
+    <filter type="and">
+      <condition attribute="statecode" operator="eq" value="0" />
+      <condition attribute="estimatedvalue" operator="not-null" />
+    </filter>
+    <link-entity name="systemuser" from="systemuserid" to="ownerid" alias="owner">
+      <attribute name="fullname" alias="ownername" groupby="true" />
+    </link-entity>
+  </entity>
+</fetch>
