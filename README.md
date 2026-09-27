@@ -1,95 +1,54 @@
-# Dynamics 365 CRM & Power Platform Portfolio
+# Dynamics 365 CE Engineering Toolkit
 
-A practical portfolio of Microsoft Dynamics 365 Customer Engagement and Power Platform development patterns.
+Enterprise-focused implementation patterns for Microsoft Dynamics 365 Customer Engagement, Dataverse and Power Platform.
 
-## Focus Areas
+## Architecture
+```
+src/Plugins       C# server-side extensions
+src/JavaScript    Model-driven form and Web API libraries
+src/FetchXML      Query and reporting patterns
+tests             Automated test examples
+docs              Architecture and engineering notes
+.github           CI/CD and repository quality
+```
+
+## Engineering Areas
 
 - Dynamics 365 CE Sales
 - Dataverse
-- JavaScript form scripting and Web Resources
-- Plugins and event pipeline concepts
-- Power Automate cloud flows
-- Power Apps
-- Business Process Flows
-- Ribbon Workbench concepts
-- XrmToolBox utilities and troubleshooting
-- Customer Insights - Journeys / Real-time Marketing concepts
-- Manual testing and CRM validation
+- C# Plugins and pipeline stages
+- Entity Images, filtering attributes and recursion control
+- Secure/unsecure configuration
+- JavaScript Web Resources and Xrm.WebApi
+- FetchXML and QueryExpression
+- Command bar / Ribbon architecture
+- Power Automate enterprise patterns
+- Customer Insights - Journeys
+- Environment Variables and Connection References
+- Solution-aware ALM
+- Security, performance and testing
 
-## Portfolio Projects
+## Engineering Principles
 
-### 1. Opportunity Automation Plugin
-A C# plugin pattern for validating and automating Opportunity updates.
+1. Protect data with server-side business rules.
+2. Retrieve only required columns.
+3. Keep plugin entry points thin and business logic testable.
+4. Use filtering attributes on Update steps.
+5. Treat recursion protection as a safety mechanism, not architecture.
+6. Prefer asynchronous processing for long-running work.
+7. Never store secrets in JavaScript or source control.
+8. Keep environment-specific configuration outside source code.
+9. Design integrations for retries and duplicate events.
+10. Trace decisions without leaking sensitive data.
 
-Includes:
-- Create/Update message handling
-- Filtering attributes
-- Pre/Post operation concepts
-- Depth protection
-- Tracing and exception handling
-- Unit-testable business logic
+## Portfolio Modules
 
-Path: `projects/opportunity-automation-plugin/`
+- Plugin engineering and registration strategy
+- JavaScript/Web API patterns
+- Power Automate error handling and child flows
+- DEV → TEST → PROD ALM
+- Security and performance
+- Customer Insights - Journeys trigger design
+- Dataverse relationship and query patterns
 
-### 2. CRM Form Validation Web Resource
-Reusable JavaScript patterns for Dynamics 365 forms.
-
-Includes:
-- Required-field validation
-- Numeric-only validation
-- Email validation
-- Phone validation
-- OnLoad / OnChange registration
-- Submit validation
-- Defensive handling of missing controls
-
-Path: `projects/crm-form-validation-js/`
-
-### 3. Power Automate Failure Logger
-An enterprise-style pattern for capturing failed cloud-flow executions into a central audit list.
-
-Includes:
-- Parent/master flow
-- Child logging flow
-- Environment variables
-- Failure reason capture
-- Record URL generation
-- Daily reporting
-- Working-day scheduling considerations
-
-Path: `projects/power-automate-failure-logger/`
-
-### 4. Customer Insights - Journeys Welcome Trigger
-A design pattern for starting a customer journey only when the first invoice exists and the welcome journey has not already been triggered.
-
-Includes:
-- Dataverse trigger design
-- Idempotency flag
-- Invoice/customer relationship handling
-- Trigger vs segment approaches
-- Test scenarios
-
-Path: `projects/customer-insights-first-invoice-trigger/`
-
-### 5. Dataverse Related vs Unrelated Record Patterns
-Examples showing how to reason about related tables, lookups, filtering, FetchXML-style joins, and Power Automate record relationships.
-
-Path: `projects/dataverse-relationships/`
-
-## Skills Demonstrated
-
-**Dynamics 365:** CE Sales, Opportunities, Accounts, Contacts, Activities, BPFs
-
-**Power Platform:** Dataverse, Power Apps, Power Automate, environment variables
-
-**Development:** C#, JavaScript, Web Resources, plugin pipeline, Xrm.WebApi
-
-**Testing:** CRM functional testing, validation, troubleshooting, regression scenarios
-
-## Important Note
-
-The examples use fictional/demo data and are intended for learning and portfolio demonstration. No customer or employer source code is included.
-
-## About
-
-This repository is maintained as a technical portfolio for Dynamics 365 CRM / Power Platform development.
+> Fictional/reference implementation for portfolio and learning purposes. No employer or customer source code is included.
