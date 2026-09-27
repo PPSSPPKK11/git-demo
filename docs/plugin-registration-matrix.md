@@ -1,21 +1,23 @@
 # Plugin Registration Matrix
 
-| Plugin | Table | Message | Stage | Mode | Filtering |
-|---|---|---|---|---|---|
-| ValidateOpportunity | opportunity | Create | PreValidation | Sync | — |
-| ValidateOpportunity | opportunity | Update | PreOperation | Sync | estimatedvalue, closeprobability |
-| OpportunityCloseGuard | opportunity | Update | PreOperation | Sync | statecode,statuscode |
-| OpportunityPostCreate | opportunity | Create | PostOperation | Async | — |
+The registration matrix makes the runtime contract visible before deployment.
 
-## Images
+| Plugin | Table | Message | Stage | Mode | Filtering attributes | Image |
+|---|---|---|---|---|---|---|
+| ValidateOpportunity | opportunity | Update | PreValidation | Sync | estimatedvalue, closeprobability | Pre |
+| OpportunityCloseGuard | opportunity | Update | PreOperation | Sync | statecode,statuscode | Pre |
+| OpportunityPostCreate | opportunity | Create | PostOperation | Async | — | Post |
+| ValidateOpportunityOwner | opportunity | Update | PreValidation | Sync | ownerid | — |
+| AutoCancelStaleOpportunity | opportunity | Update | PostOperation/reference | Async/reference | modifiedon,new_opportunitytype | Pre |
+| HeatOutcomeProductProcessor | product | Update | PostOperation | Async | new_heatoutcome,new_companycode,new_productsize | Pre |
 
-For Update logic that compares old/new values, register a minimal Pre Image.
+## Registration rules
 
-Example alias:
-`PreImage`
+- Keep Update filtering attributes narrow.
+- Do not include the primary key as an Update filtering attribute.
+- Use images for values that existed before/after the operation instead of unnecessary Retrieve calls.
+- Keep synchronous validation short.
+- Use asynchronous execution for work that does not need to block the user.
+- Keep environment-specific configuration outside source code.
 
-Only include columns required by the comparison.
-
-## Execution order
-
-When multiple steps exist on the same event, define explicit execution order rather than relying on an accidental order.
+The matrix is source-controlled because registration mistakes are runtime bugs, not deployment paperwork.
