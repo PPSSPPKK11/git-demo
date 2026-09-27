@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+
+# Test/build output
+TestResults/
+coverage/
+
+# Local tooling
+*.nupkg
+packages/
+
+# Secrets and local configuration
+*.local.json
+*.secrets.json
+.env
+
+# OS
+.DS_Store
+Thumbs.db
