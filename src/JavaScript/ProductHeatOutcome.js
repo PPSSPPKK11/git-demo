@@ -8,26 +8,45 @@ CRM.ProductHeat = (function () {
         return String(value).replace(/'/g, "''");
     }
 
-    async function loadProductsByHeatOutcome(heatOutcome, companyCode) {
-        var filter = "statecode eq 0 and new_heatoutcome eq '" +
-            escapeOData(heatOutcome) + "'";
+    async function loadProductsByHeatOutcome(heatOutcome, companyCode, requestedSize) {
+        var filters = [
+            "statecode eq 0",
+            "new_heatoutcome eq '" + escapeOData(heatOutcome) + "'"
+        ];
 
-        if (companyCode) {
-            filter += " and new_companycode eq '" +
-                escapeOData(companyCode) + "'";
+        // Important: (size matches OR size is empty) AND company matches.
+        if (requestedSize) {
+            filters.push(
+                "(new_productsize eq '" + escapeOData(requestedSize) +
+                "' or new_productsize eq null)"
+            );
         }
 
-        var query = "?$select=productid,name,productnumber,new_heatoutcome,new_companycode" +
-            "&$filter=" + filter +
+        if (companyCode) {
+            filters.push(
+                "new_companycode eq '" + escapeOData(companyCode) + "'"
+            );
+        }
+
+        var query =
+            "?$select=productid,name,productnumber,new_heatoutcome,new_companycode,new_productsize" +
+            "&$filter=" + filters.join(" and ") +
             "&$orderby=name asc";
 
         var all = [];
         var next = query;
 
         while (next) {
-            var page = await Xrm.WebApi.retrieveMultipleRecords("product", next, PAGE_SIZE);
+            var page = await Xrm.WebApi.retrieveMultipleRecords(
+                "product",
+                next,
+                PAGE_SIZE
+            );
+
             all = all.concat(page.entities);
-            next = page.nextLink ? page.nextLink.split("/api/data/v9.2/product")[1] : null;
+            next = page.nextLink
+                ? page.nextLink.substring(page.nextLink.indexOf("?"))
+                : null;
         }
 
         return all;
@@ -46,4 +65,4 @@ CRM.ProductHeat = (function () {
         loadProductsByHeatOutcome: loadProductsByHeatOutcome,
         groupByOutcome: groupByOutcome
     };
-})();
+}());
